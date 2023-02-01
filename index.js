@@ -1,6 +1,7 @@
 require("dotenv").config()
 const { ApolloServer } = require("apollo-server")
 const mongoose = require("mongoose")
+const { merge } = require("lodash");
 
 const mongoString = process.env.DATABASE_URL
 
@@ -10,12 +11,13 @@ const mongoString = process.env.DATABASE_URL
 
 const employeeTypeDefs = require("./graphql/employeeTypeDefs")
 const employeeResolvers = require("./graphql/employeeResolvers")
+const userTypeDefs = require("./graphql/userTypeDefs")
+const userResolvers = require("./graphql/userResolver")
 
 const server = new ApolloServer({
-    typeDefs: employeeTypeDefs,
-    resolvers: employeeResolvers,
-  })
-  
+  typeDefs: [employeeTypeDefs, userTypeDefs],
+  resolvers: merge(employeeResolvers, userResolvers),
+})
 
 mongoose
   .connect(mongoString, { useNewUrlParser: true })
