@@ -34,9 +34,26 @@ module.exports = {
       }
     },
 
+    async editEmployee(
+      _,
+      { id, EmployeeInput: { first_name, last_name, email, gender, salary } }
+    ) {
+      if (!first_name || !last_name || !email || !gender || !salary) {
+        throw new Error("One or more fields are empty")
+      }
+
+      const updatedEmployee = await Employee.findByIdAndUpdate(
+        id,
+        { $set: { first_name, last_name, email, gender, salary } },
+        { new: true }
+      )
+
+      return updatedEmployee
+    },
+
     async deleteEmployee(_, { id }) {
       const res = await Employee.findByIdAndDelete(id)
       return true
-    }
+    },
   },
 }
