@@ -33,5 +33,10 @@ module.exports = {
         ...res._doc,
       }
     },
+
+    async deleteEmployee(_, { id }) {
+      const res = await Employee.findByIdAndDelete(id)
+      return true
+    }
   },
 }
