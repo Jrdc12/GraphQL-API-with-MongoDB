@@ -1,13 +1,14 @@
 const Employee = require("../models/EmployeeModel")
 
+
 module.exports = {
   Query: {
     async employee(_, { id }) {
       return await Employee.findById(id)
     },
-    // async getEmployees() {
-    //   return await Employee.find()
-    // },
+    async getEmployees() {
+      return await Employee.find()
+    },
   },
   Mutation: {
     async createEmployee(
