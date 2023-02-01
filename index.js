@@ -8,13 +8,14 @@ const mongoString = process.env.DATABASE_URL
 // typeDefs: GraphQL Type Definitions
 // resolvers: How do we resolve queries and mutations
 
-const typeDefs = require("./graphql/typeDefs")
-const resolvers = require("./graphql/resolvers")
+const employeeTypeDefs = require("./graphql/employeeTypeDefs")
+const employeeResolvers = require("./graphql/employeeResolvers")
 
 const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-})
+    typeDefs: employeeTypeDefs,
+    resolvers: employeeResolvers,
+  })
+  
 
 mongoose
   .connect(mongoString, { useNewUrlParser: true })
