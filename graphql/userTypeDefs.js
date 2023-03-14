@@ -8,6 +8,12 @@ module.exports = gql`
     password: String!
   }
 
+  type LoginResponse {
+    token: String!
+    user: User!
+    message: String!
+  }
+
   input UserInput {
     username: String!
     email: String!
@@ -28,6 +34,6 @@ module.exports = gql`
     createUser(input: UserInput!): User
     updateUser(id: ID!, input: UserInput!): User
     deleteUser(id: ID!): String
-    login(input: LoginInput!): User
+    login(input: LoginInput!): LoginResponse!
   }
 `

@@ -2,7 +2,7 @@ require("dotenv").config()
 const jwt = require("jsonwebtoken")
 const User = require("../models/UserModel")
 const bcrypt = require("bcrypt")
-
+const JWT_SECRET = process.env.JWT_SECRET
 
 module.exports = {
   Query: {
@@ -82,12 +82,18 @@ module.exports = {
       if (!validPassword) {
         throw new Error("Incorrect password")
       }
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      if (!user.email) {
+        throw new Error("Email field is null")
+      }
+      const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
         expiresIn: "1d",
       })
       return {
         token,
-        user,
+        user: {
+          ...user.toObject(),
+          email: user.email || "",
+        },
       }
     },
   },
