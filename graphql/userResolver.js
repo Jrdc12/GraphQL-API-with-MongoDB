@@ -1,13 +1,26 @@
+require("dotenv").config()
+const jwt = require("jsonwebtoken")
 const User = require("../models/UserModel")
 const bcrypt = require("bcrypt")
+const JWT_SECRET = process.env.JWT_SECRET
 
 module.exports = {
   Query: {
-    async getUser(_, { id }) {
-      return await User.findById(id)
+    async getUser(_, { id }, context) {
+      try {
+        jwt.verify(context.token, process.env.JWT_SECRET)
+        return await User.findById(id)
+      } catch (err) {
+        throw new Error("Not authenticated")
+      }
     },
-    async getUsers() {
-      return await User.find()
+    async getUsers(context) {
+      try {
+        jwt.verify(context.token, process.env.JWT_SECRET)
+        return await User.find()
+      } catch (err) {
+        throw new Error("Not authenticated")
+      }
     },
   },
   Mutation: {
@@ -27,27 +40,37 @@ module.exports = {
       return user
     },
 
-    async updateUser(_, { id, input: { username, email, password } }) {
-      const hashedPassword = await bcrypt.hash(password, 12)
+    async updateUser(_, { id, input: { username, email, password } }, context) {
+      try {
+        jwt.verify(context.token, process.env.JWT_SECRET)
+        const hashedPassword = await bcrypt.hash(password, 12)
 
-      if (!username || !email || !password) {
-        throw new Error("One or more fields are empty")
+        if (!username || !email || !password) {
+          throw new Error("One or more fields are empty")
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+          id,
+          { $set: { username, email, password: hashedPassword } },
+          { new: true }
+        )
+        return updatedUser
+      } catch (err) {
+        throw new Error("Not authenticated")
       }
-
-      const updatedUser = await User.findByIdAndUpdate(
-        id,
-        { $set: { username, email, password: hashedPassword } },
-        { new: true }
-      )
-      return updatedUser
     },
 
-    async deleteUser(_, { id }) {
-      const deletedUser = await User.findByIdAndDelete(id)
-      if (!deletedUser) {
-        throw new Error("User not found")
+    async deleteUser(_, { id }, context) {
+      try {
+        jwt.verify(context.token, process.env.JWT_SECRET)
+        const deletedUser = await User.findByIdAndDelete(id)
+        if (!deletedUser) {
+          throw new Error("User not found")
+        }
+        return "User deleted"
+      } catch (err) {
+        throw new Error("Not authenticated")
       }
-      return "User deleted"
     },
 
     async login(_, { input: { email, password } }) {
@@ -59,8 +82,19 @@ module.exports = {
       if (!validPassword) {
         throw new Error("Incorrect password")
       }
-      // change return value to logged in
-      return user
+      if (!user.email) {
+        throw new Error("Email field is null")
+      }
+      const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
+        expiresIn: "1d",
+      })
+      return {
+        token,
+        user: {
+          ...user.toObject(),
+          email: user.email || "",
+        },
+      }
     },
   },
 }
