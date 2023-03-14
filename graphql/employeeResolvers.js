@@ -1,13 +1,16 @@
 const Employee = require("../models/EmployeeModel")
 
-
 module.exports = {
   Query: {
     async employee(_, { id }) {
       return await Employee.findById(id)
     },
     async getEmployees() {
-      return await Employee.find()
+      const employees = await Employee.find()
+      return employees.map((employee) => ({
+        ...employee._doc,
+        id: employee._id.toString(),
+      }))
     },
   },
   Mutation: {
